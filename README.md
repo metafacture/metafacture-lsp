@@ -19,7 +19,7 @@ mvn clean install
 
 **Run**
 ```
-java -jar target/hellols-0.0.1-SNAPSHOT.jar
+java -jar target/metafacture-lsp-0.0.1-SNAPSHOT.jar
 ```
 
 Websocket service will be up on
