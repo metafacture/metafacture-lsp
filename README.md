@@ -1,4 +1,5 @@
 # metafacture-lsp
+
 Implementations of the Language Server Protocol for Metafacture languages.
 
 This is a first very simple approach for a language server. It implements autocompletion.
@@ -10,16 +11,18 @@ It's a copy of https://github.com/NipunaMarcus/web-editor/tree/websocket-ls with
 
 Make sure you have Java installed in your workspace.
 
- - Java: 11 or Above
+- Java: 21 or Above
 
 **Build**
+
 ```
-mvn clean install
+gradlew clean build
 ```
 
 **Run**
+
 ```
-java -jar target/metafacture-lsp-0.0.1-SNAPSHOT.jar
+java -jar ./build/libs/metafacture-lsp-0.0.1-SNAPSHOT.jar
 ```
 
 Websocket service will be up on
