@@ -42,9 +42,8 @@ public class MetafactureTextDocumentService implements TextDocumentService {
                 String detail = "";
 
                 for (Annotation annotation : classAnnotations) {
-                    // Access annotation properties
-                    System.out.println("Annotation: " + annotation.toString());
-                    Class<? extends Annotation> annotationType = annotation.annotationType();
+                            Class<? extends Annotation> annotationType =
+                                    annotation.annotationType();
                     if (annotationType == FluxCommand.class) {
                         FluxCommand fluxCommand = (FluxCommand) annotation;
                         command = fluxCommand.value();
