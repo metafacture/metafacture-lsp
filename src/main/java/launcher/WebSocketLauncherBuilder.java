@@ -32,7 +32,8 @@ public class WebSocketLauncherBuilder<T> extends Launcher.Builder<T> {
         if (exceptionHandler == null)
             remoteEndpoint = new RemoteEndpoint(outgoingMessageStream, localEndpoint);
         else
-            remoteEndpoint = new RemoteEndpoint(outgoingMessageStream, localEndpoint, exceptionHandler);
+            remoteEndpoint =
+                    new RemoteEndpoint(outgoingMessageStream, localEndpoint, exceptionHandler);
         jsonHandler.setMethodProvider(remoteEndpoint);
         return remoteEndpoint;
     }

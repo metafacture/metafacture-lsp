@@ -1,5 +1,6 @@
 package langserver;
 
+import java.util.concurrent.CompletableFuture;
 import org.eclipse.lsp4j.CompletionOptions;
 import org.eclipse.lsp4j.InitializeParams;
 import org.eclipse.lsp4j.InitializeResult;
@@ -10,8 +11,6 @@ import org.eclipse.lsp4j.services.LanguageClientAware;
 import org.eclipse.lsp4j.services.LanguageServer;
 import org.eclipse.lsp4j.services.TextDocumentService;
 import org.eclipse.lsp4j.services.WorkspaceService;
-
-import java.util.concurrent.CompletableFuture;
 
 public class MetafactureLanguageServer implements LanguageServer, LanguageClientAware {
     private TextDocumentService textDocumentService;
@@ -33,7 +32,7 @@ public class MetafactureLanguageServer implements LanguageServer, LanguageClient
         initializeResult.getCapabilities().setTextDocumentSync(TextDocumentSyncKind.Full);
         CompletionOptions completionOptions = new CompletionOptions();
         initializeResult.getCapabilities().setCompletionProvider(completionOptions);
-        return CompletableFuture.supplyAsync(()->initializeResult);
+        return CompletableFuture.supplyAsync(() -> initializeResult);
     }
 
     @Override

@@ -13,8 +13,7 @@ import org.springframework.web.socket.handler.PerConnectionWebSocketHandler;
 public class WebSocketConfig implements WebSocketConfigurer {
     @Override
     public void registerWebSocketHandlers(WebSocketHandlerRegistry registry) {
-        registry.addHandler(webSocketHandler(), "/ls")
-                .setAllowedOrigins("*");
+        registry.addHandler(webSocketHandler(), "/ls").setAllowedOrigins("*");
     }
 
     @Bean

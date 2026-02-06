@@ -8,8 +8,6 @@ import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
 
-import java.io.IOException;
-
 public class LanguageServerWebSocketHandler extends TextWebSocketHandler {
     private MetafactureLanguageServer languageServer;
     private WebSocketMessageHandler messageHandler;
@@ -25,13 +23,16 @@ public class LanguageServerWebSocketHandler extends TextWebSocketHandler {
 
     @Override
     public void afterConnectionEstablished(WebSocketSession session) {
-        System.out.println("connection established. sessionId: " + session.getId() + ", Client: " + session.getRemoteAddress());
-        try{
+        System.out.println(
+                "connection established. sessionId: "
+                        + session.getId()
+                        + ", Client: "
+                        + session.getRemoteAddress());
+        try {
             languageServer = new MetafactureLanguageServer();
             messageHandler = new WebSocketMessageHandler();
             WebSocketLauncherBuilder<LanguageClient> builder = new WebSocketLauncherBuilder<>();
-            builder
-                    .setSession(session)
+            builder.setSession(session)
                     .setMessageHandler(messageHandler)
                     .setLocalService(languageServer)
                     .setRemoteInterface(LanguageClient.class);

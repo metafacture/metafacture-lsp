@@ -2,6 +2,7 @@ plugins {
     id 'java'
     id 'org.springframework.boot' version '2.7.18'
     id 'io.spring.dependency-management' version '1.1.4'
+    id 'com.diffplug.spotless' version '8.0.0'
 }
 
 group = 'org.metafacture.lsp'
@@ -53,4 +54,27 @@ tasks.named('test') {
 
 bootJar {
     archiveFileName = 'metafacture-lsp-0.0.1-SNAPSHOT.jar'
+}
+
+spotless {
+
+    java {
+        target 'src/*/java/**/*.java'
+        removeUnusedImports()
+        forbidWildcardImports()
+        formatAnnotations()
+        googleJavaFormat().aosp().reflowLongStrings()
+    }
+
+    flexmark {
+        target '*.md', 'src/**/*.md'
+        flexmark()
+    }
+
+    format 'misc', {
+        target '*.gradle', '.gitignore'
+        trimTrailingWhitespace()
+        leadingTabsToSpaces()
+        endWithNewline()
+    }
 }

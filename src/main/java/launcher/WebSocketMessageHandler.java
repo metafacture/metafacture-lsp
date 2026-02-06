@@ -11,7 +11,10 @@ public class WebSocketMessageHandler {
     private MessageJsonHandler jsonHandler;
     private MessageIssueHandler issueHandler;
 
-    public void setConfigs(MessageConsumer consumer, MessageJsonHandler jsonHandler, MessageIssueHandler issueHandler) {
+    public void setConfigs(
+            MessageConsumer consumer,
+            MessageJsonHandler jsonHandler,
+            MessageIssueHandler issueHandler) {
         this.consumer = consumer;
         this.issueHandler = issueHandler;
         this.jsonHandler = jsonHandler;
