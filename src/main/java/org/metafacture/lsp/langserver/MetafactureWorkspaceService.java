@@ -1,4 +1,4 @@
-package langserver;
+package org.metafacture.lsp.langserver;
 
 import org.eclipse.lsp4j.DidChangeConfigurationParams;
 import org.eclipse.lsp4j.DidChangeWatchedFilesParams;

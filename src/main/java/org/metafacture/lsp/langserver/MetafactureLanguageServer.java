@@ -1,4 +1,4 @@
-package langserver;
+package org.metafacture.lsp.langserver;
 
 import java.util.concurrent.CompletableFuture;
 import org.eclipse.lsp4j.CompletionOptions;

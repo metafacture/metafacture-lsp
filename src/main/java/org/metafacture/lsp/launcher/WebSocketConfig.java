@@ -1,4 +1,4 @@
-package launcher;
+package org.metafacture.lsp.launcher;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

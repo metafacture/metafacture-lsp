@@ -1,8 +1,8 @@
-package launcher;
+package org.metafacture.lsp.launcher;
 
-import langserver.MetafactureLanguageServer;
 import org.eclipse.lsp4j.jsonrpc.Launcher;
 import org.eclipse.lsp4j.services.LanguageClient;
+import org.metafacture.lsp.langserver.MetafactureLanguageServer;
 import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;

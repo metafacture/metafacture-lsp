@@ -1,4 +1,4 @@
-package langserver;
+package org.metafacture.lsp.langserver;
 
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;

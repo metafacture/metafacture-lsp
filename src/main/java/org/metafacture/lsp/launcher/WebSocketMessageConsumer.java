@@ -1,4 +1,4 @@
-package launcher;
+package org.metafacture.lsp.launcher;
 
 import java.io.IOException;
 import org.eclipse.lsp4j.jsonrpc.JsonRpcException;

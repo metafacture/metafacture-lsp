@@ -1,4 +1,4 @@
-package launcher;
+package org.metafacture.lsp.launcher;
 
 import org.eclipse.lsp4j.jsonrpc.Endpoint;
 import org.eclipse.lsp4j.jsonrpc.Launcher;

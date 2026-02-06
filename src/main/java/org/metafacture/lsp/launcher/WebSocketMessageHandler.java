@@ -1,4 +1,4 @@
-package launcher;
+package org.metafacture.lsp.launcher;
 
 import org.eclipse.lsp4j.jsonrpc.MessageConsumer;
 import org.eclipse.lsp4j.jsonrpc.MessageIssueException;
