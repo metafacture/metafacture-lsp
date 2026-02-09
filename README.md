@@ -11,12 +11,12 @@ It's a copy of https://github.com/NipunaMarcus/hellols/tree/websocket-launcher w
 
 Make sure you have Java installed in your workspace.
 
-- Java: 21 or Above
+Java: 21 or Above
 
 **Build**
 
 ```
-gradlew clean build
+./gradlew clean build
 ```
 
 **Run**
@@ -32,4 +32,7 @@ ws://localhost:8080/ls
 ```
 
 **Client**
+
 To communicate with the server and test autocompletion, follow the instructions on https://github.com/NipunaMarcus/web-editor/tree/websocket-ls to start a simple web-editor.
+
+Note: You need to clone or switch to the `websocket-ls` branch. If `npm run build` fails, try `npm install` instead. Trigger suggestions by typing or with Ctrl+Space.
