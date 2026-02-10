@@ -15,7 +15,6 @@ import org.eclipse.lsp4j.services.WorkspaceService;
 public class MetafactureLanguageServer implements LanguageServer, LanguageClientAware {
     private TextDocumentService textDocumentService;
     private WorkspaceService workspaceService;
-    private LanguageClient client;
     private int errorCode = 1;
 
     public MetafactureLanguageServer() {
@@ -63,6 +62,5 @@ public class MetafactureLanguageServer implements LanguageServer, LanguageClient
     @Override
     public void connect(LanguageClient languageClient) {
         // Get the client which started this LS.
-        this.client = languageClient;
     }
 }
