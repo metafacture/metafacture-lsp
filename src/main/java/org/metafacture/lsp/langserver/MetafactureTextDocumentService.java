@@ -1,10 +1,10 @@
 package org.metafacture.lsp.langserver;
 
-import java.lang.annotation.Annotation;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
+import java.util.function.Function;
+import java.util.stream.Stream;
 import org.eclipse.lsp4j.CompletionItem;
 import org.eclipse.lsp4j.CompletionItemKind;
 import org.eclipse.lsp4j.CompletionList;
@@ -22,57 +22,35 @@ import org.metafacture.framework.annotations.Out;
 import org.reflections.Reflections;
 
 public class MetafactureTextDocumentService implements TextDocumentService {
+
     @Override
     public CompletableFuture<Either<List<CompletionItem>, CompletionList>> completion(
             CompletionParams completionParams) {
-        // Provide completion item.
-        return CompletableFuture.supplyAsync(
-                () -> {
-                    List<CompletionItem> completionItems = new ArrayList<>();
+        return CompletableFuture.supplyAsync(() -> Either.forLeft(getCompletionItems().toList()));
+    }
 
-                    // Get all classes annotated with @FluxCommand
-                    Reflections reflections = new Reflections("org.metafacture");
-                    Set<Class<?>> annotatedClasses =
-                            reflections.getTypesAnnotatedWith(FluxCommand.class);
+    private Stream<CompletionItem> getCompletionItems() {
+        return new Reflections("org.metafacture")
+                .getTypesAnnotatedWith(FluxCommand.class).stream().map(toCompletionItem());
+    }
 
-                    for (Class<?> clazz : annotatedClasses) {
-                        // Get class annotations
-                        Annotation[] classAnnotations = clazz.getAnnotations();
-                        String command = "";
-                        String detail = "";
-
-                        for (Annotation annotation : classAnnotations) {
-                            Class<? extends Annotation> annotationType =
-                                    annotation.annotationType();
-                            if (annotationType == FluxCommand.class) {
-                                FluxCommand fluxCommand = (FluxCommand) annotation;
-                                command = fluxCommand.value();
-                            } else if (annotationType == Description.class) {
-                                Description description = (Description) annotation;
-                                detail = description.value();
-                            } else if (annotationType == In.class) {
-                                In in = (In) annotation;
-                                detail += "| In: " + String.join(", ", in.value().getSimpleName());
-                            } else if (annotationType == Out.class) {
-                                Out out = (Out) annotation;
-                                detail +=
-                                        "| Out: " + String.join(", ", out.value().getSimpleName());
-                            } else {
-                                continue;
-                            }
-
-                            CompletionItem completionItem = new CompletionItem();
-                            completionItem.setInsertText(command);
-                            completionItem.setLabel(command);
-                            completionItem.setKind(CompletionItemKind.Function);
-                            completionItem.setDetail(detail);
-                            completionItems.add(completionItem);
-                        }
-                    }
-
-                    // Return the list of completion items.
-                    return Either.forLeft(completionItems);
-                });
+    private Function<Class<?>, CompletionItem> toCompletionItem() {
+        return annotatedClass -> {
+            String fluxCommand = annotatedClass.getAnnotation(FluxCommand.class).value();
+            CompletionItem completionItem = new CompletionItem(fluxCommand);
+            completionItem.setInsertText(fluxCommand);
+            completionItem.setKind(CompletionItemKind.Function);
+            var optionalDesc = Optional.ofNullable(annotatedClass.getAnnotation(Description.class));
+            var optionalIn = Optional.ofNullable(annotatedClass.getAnnotation(In.class));
+            var optionalOut = Optional.ofNullable(annotatedClass.getAnnotation(Out.class));
+            completionItem.setDetail(
+                    String.format(
+                            "%s | In: %s | Out: %s",
+                            optionalDesc.map(Description::value).orElse(""),
+                            optionalIn.map(in -> in.value().getSimpleName()).orElse(""),
+                            optionalOut.map(out -> out.value().getSimpleName()).orElse("")));
+            return completionItem;
+        };
     }
 
     @Override
