@@ -19,8 +19,7 @@ public class WebSocketLauncherBuilder<T> extends Launcher.Builder<T> {
         MessageConsumer messageConsumer = wrapMessageConsumer(remoteEndpoint);
         messageHandler.setConfigs(messageConsumer, jsonHandler, remoteEndpoint);
 
-        T remoteProxy = createProxy(remoteEndpoint);
-        return createLauncher(null, remoteProxy, remoteEndpoint, null);
+        return createLauncher(null, createProxy(remoteEndpoint), remoteEndpoint, null);
     }
 
     @Override

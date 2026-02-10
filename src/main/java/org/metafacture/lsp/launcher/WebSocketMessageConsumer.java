@@ -21,10 +21,8 @@ public class WebSocketMessageConsumer implements MessageConsumer {
     @Override
     public void consume(Message message) throws MessageIssueException, JsonRpcException {
         try {
-            String content = jsonHandler.serialize(message);
             if (session.isOpen()) {
-                TextMessage textMessage = new TextMessage(content);
-                session.sendMessage(textMessage);
+                session.sendMessage(new TextMessage(jsonHandler.serialize(message)));
             }
         } catch (IOException exception) {
             throw new JsonRpcException(exception);

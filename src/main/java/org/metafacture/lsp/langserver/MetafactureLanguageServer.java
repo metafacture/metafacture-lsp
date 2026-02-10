@@ -29,8 +29,7 @@ public class MetafactureLanguageServer implements LanguageServer, LanguageClient
 
         // Set the capabilities of the LS to inform the client.
         initializeResult.getCapabilities().setTextDocumentSync(TextDocumentSyncKind.Full);
-        CompletionOptions completionOptions = new CompletionOptions();
-        initializeResult.getCapabilities().setCompletionProvider(completionOptions);
+        initializeResult.getCapabilities().setCompletionProvider(new CompletionOptions());
         return CompletableFuture.supplyAsync(() -> initializeResult);
     }
 
