@@ -18,7 +18,6 @@ The following is a set of guidelines for contributing to Metafacture LSP and how
 * [Definition of Ready](#definition-of-ready)
 * [Definition of Done](#definition-of-done)
 
-
 ## How can I contribute?
 
 ### Reporting Bugs
@@ -147,3 +146,4 @@ The *Definition of Done* describes a list of criteria which issues have to meet 
 - Pull request is reviewed and approved
 - Functionality is merged into the main branch
 - Deployed to production
+
