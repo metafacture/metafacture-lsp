@@ -1,4 +1,4 @@
-package org.metafacture.lsp.test;
+package org.metafacture.lsp;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -7,10 +7,10 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import org.eclipse.lsp4j.CompletionContext;
 import org.eclipse.lsp4j.CompletionItem;
+import org.eclipse.lsp4j.CompletionItemKind;
 import org.eclipse.lsp4j.CompletionList;
 import org.eclipse.lsp4j.CompletionParams;
 import org.eclipse.lsp4j.CompletionTriggerKind;
@@ -40,23 +40,25 @@ class MetafactureTextDocumentServiceTests {
         return items.stream().filter(item -> label.equals(item.getLabel())).findFirst();
     }
 
+    private List<CompletionItem> getCompletionItems()
+            throws InterruptedException, ExecutionException {
+        return textDocumentService.completion(createCompletionParams()).get().getLeft();
+    }
+
     @Test
     @DisplayName("Completion returns non-null CompletableFuture")
     void testCompletionReturnsNonNullFuture() {
-        CompletionParams completionParams = createCompletionParams();
-        CompletableFuture<Either<List<CompletionItem>, CompletionList>> result =
-                textDocumentService.completion(completionParams);
-        assertNotNull(result, "Completion should return a non-null CompletableFuture");
+        assertNotNull(
+                textDocumentService.completion(createCompletionParams()),
+                "Completion should return a non-null CompletableFuture");
     }
 
     @Test
     @DisplayName("Completion future completes successfully without exceptions")
     void testCompletionFutureCompletesSuccessfully()
             throws ExecutionException, InterruptedException {
-        CompletionParams completionParams = createCompletionParams();
-        CompletableFuture<Either<List<CompletionItem>, CompletionList>> result =
-                textDocumentService.completion(completionParams);
-        Either<List<CompletionItem>, CompletionList> completionResult = result.get();
+        Either<List<CompletionItem>, CompletionList> completionResult =
+                textDocumentService.completion(createCompletionParams()).get();
         assertNotNull(completionResult, "Future should complete with non-null result");
         assertTrue(
                 completionResult.isLeft(),
@@ -66,10 +68,7 @@ class MetafactureTextDocumentServiceTests {
     @Test
     @DisplayName("Completion result contains a list of completion items")
     void testCompletionResultContainsItems() throws ExecutionException, InterruptedException {
-        CompletionParams completionParams = createCompletionParams();
-        CompletableFuture<Either<List<CompletionItem>, CompletionList>> result =
-                textDocumentService.completion(completionParams);
-        List<CompletionItem> items = result.get().getLeft();
+        List<CompletionItem> items = getCompletionItems();
         assertNotNull(items, "Completion items list should not be null");
         assertFalse(items.isEmpty(), "Completion items list should not be empty");
         assertTrue(items.size() > 0, "Should have at least one completion item");
@@ -78,11 +77,7 @@ class MetafactureTextDocumentServiceTests {
     @Test
     @DisplayName("Completion items have non-null label and insertText")
     void testCompletionItemsHaveRequiredFields() throws ExecutionException, InterruptedException {
-        CompletionParams completionParams = createCompletionParams();
-        CompletableFuture<Either<List<CompletionItem>, CompletionList>> result =
-                textDocumentService.completion(completionParams);
-        List<CompletionItem> items = result.get().getLeft();
-        for (CompletionItem item : items) {
+        for (CompletionItem item : getCompletionItems()) {
             assertNotNull(item.getLabel(), "Completion item label should not be null");
             assertFalse(item.getLabel().isEmpty(), "Completion item label should not be empty");
             assertNotNull(item.getInsertText(), "Completion item insertText should not be null");
@@ -96,14 +91,10 @@ class MetafactureTextDocumentServiceTests {
     @Test
     @DisplayName("Completion items have CompletionItemKind set to Function")
     void testCompletionItemsHaveCorrectKind() throws ExecutionException, InterruptedException {
-        CompletionParams completionParams = createCompletionParams();
-        CompletableFuture<Either<List<CompletionItem>, CompletionList>> result =
-                textDocumentService.completion(completionParams);
-        List<CompletionItem> items = result.get().getLeft();
-        for (CompletionItem item : items) {
+        for (CompletionItem item : getCompletionItems()) {
             assertNotNull(item.getKind(), "Completion item kind should not be null");
             assertEquals(
-                    org.eclipse.lsp4j.CompletionItemKind.Function,
+                    CompletionItemKind.Function,
                     item.getKind(),
                     "All items should have CompletionItemKind.Function");
         }
@@ -113,11 +104,7 @@ class MetafactureTextDocumentServiceTests {
     @DisplayName("Completion items have detail information")
     void testCompletionItemsHaveDetailInformation()
             throws ExecutionException, InterruptedException {
-        CompletionParams completionParams = createCompletionParams();
-        CompletableFuture<Either<List<CompletionItem>, CompletionList>> result =
-                textDocumentService.completion(completionParams);
-        List<CompletionItem> items = result.get().getLeft();
-        for (CompletionItem item : items) {
+        for (CompletionItem item : getCompletionItems()) {
             assertNotNull(item.getDetail(), "Completion item detail should not be null");
             assertTrue(
                     item.getDetail().contains("|"),
@@ -133,13 +120,10 @@ class MetafactureTextDocumentServiceTests {
     @DisplayName("Completion contains multiple known Metafacture commands")
     void testCompletionContainsMultipleKnownCommands()
             throws ExecutionException, InterruptedException {
-        CompletionParams completionParams = createCompletionParams();
-        String[] expectedCommands = {"decode-marc21", "encode-marc21", "pass-through"};
-        CompletableFuture<Either<List<CompletionItem>, CompletionList>> result =
-                textDocumentService.completion(completionParams);
-        List<CompletionItem> items = result.get().getLeft();
-        List<String> completionLabels = items.stream().map(CompletionItem::getLabel).toList();
-        for (String expectedCommand : expectedCommands) {
+        List<String> completionLabels =
+                getCompletionItems().stream().map(CompletionItem::getLabel).toList();
+        for (String expectedCommand :
+                new String[] {"decode-marc21", "encode-marc21", "pass-through"}) {
             assertTrue(
                     completionLabels.contains(expectedCommand),
                     "Completion should contain '" + expectedCommand + "' command");
@@ -149,11 +133,8 @@ class MetafactureTextDocumentServiceTests {
     @Test
     @DisplayName("'decode-marc21' completion item has correct insertText")
     void testDecodeMarc21HasCorrectInsertText() throws ExecutionException, InterruptedException {
-        CompletionParams completionParams = createCompletionParams();
-        CompletableFuture<Either<List<CompletionItem>, CompletionList>> result =
-                textDocumentService.completion(completionParams);
-        List<CompletionItem> items = result.get().getLeft();
-        Optional<CompletionItem> decodeMarc21 = findCompletionItemByLabel(items, "decode-marc21");
+        Optional<CompletionItem> decodeMarc21 =
+                findCompletionItemByLabel(getCompletionItems(), "decode-marc21");
         assertTrue(decodeMarc21.isPresent(), "decode-marc21 command should exist");
         assertEquals(
                 decodeMarc21.get().getLabel(),
@@ -164,11 +145,8 @@ class MetafactureTextDocumentServiceTests {
     @Test
     @DisplayName("'decode-marc21' completion item has detail with In and Out information")
     void testDecodeMarc21HasCorrectDetail() throws ExecutionException, InterruptedException {
-        CompletionParams completionParams = createCompletionParams();
-        CompletableFuture<Either<List<CompletionItem>, CompletionList>> result =
-                textDocumentService.completion(completionParams);
-        List<CompletionItem> items = result.get().getLeft();
-        Optional<CompletionItem> decodeMarc21 = findCompletionItemByLabel(items, "decode-marc21");
+        Optional<CompletionItem> decodeMarc21 =
+                findCompletionItemByLabel(getCompletionItems(), "decode-marc21");
         assertTrue(decodeMarc21.isPresent(), "decode-marc21 command should exist");
         assertTrue(
                 decodeMarc21.get().getDetail().contains("In:"),
@@ -182,11 +160,7 @@ class MetafactureTextDocumentServiceTests {
     @DisplayName("All completion items have non-empty labels")
     void testAllCompletionItemsHaveNonEmptyLabels()
             throws ExecutionException, InterruptedException {
-        CompletionParams completionParams = createCompletionParams();
-        CompletableFuture<Either<List<CompletionItem>, CompletionList>> result =
-                textDocumentService.completion(completionParams);
-        List<CompletionItem> items = result.get().getLeft();
-        for (CompletionItem item : items) {
+        for (CompletionItem item : getCompletionItems()) {
             assertFalse(
                     item.getLabel().isEmpty(), "Every completion item must have a non-empty label");
             assertFalse(
@@ -198,11 +172,7 @@ class MetafactureTextDocumentServiceTests {
     @Test
     @DisplayName("Completion item labels are unique")
     void testCompletionItemLabelsAreUnique() throws ExecutionException, InterruptedException {
-        CompletionParams completionParams = createCompletionParams();
-        CompletableFuture<Either<List<CompletionItem>, CompletionList>> result =
-                textDocumentService.completion(completionParams);
-        List<CompletionItem> items = result.get().getLeft();
-        List<String> labels = items.stream().map(CompletionItem::getLabel).toList();
+        List<String> labels = getCompletionItems().stream().map(CompletionItem::getLabel).toList();
         long uniqueLabels = labels.stream().distinct().count();
         assertEquals(
                 labels.size(),
