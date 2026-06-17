@@ -13,23 +13,29 @@ Make sure you have Java installed in your workspace.
 
 Java: 21 or Above
 
-**Build**
+### Start in development mode
+
+In one terminal run
+```
+./gradlew compileJava -t
+```
+
+and in another terminal run
+```
+./gradlew bootRun
+```
+
+Websocket service will be up on ws://localhost:8080/ls.
+
+
+### Start in production mode
 
 ```
 ./gradlew clean build
-```
-
-**Run**
-
-```
 java -jar ./build/libs/metafacture-lsp-0.0.1-SNAPSHOT.jar
 ```
 
-Websocket service will be up on
-
-```
-ws://localhost:8080/ls
-```
+Websocket service will be up on ws://localhost:8080/ls.
 
 **Client**
 
