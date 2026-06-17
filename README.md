@@ -16,17 +16,18 @@ Java: 21 or Above
 ### Start in development mode
 
 In one terminal run
+
 ```
 ./gradlew compileJava -t
 ```
 
 and in another terminal run
+
 ```
 ./gradlew bootRun
 ```
 
 Websocket service will be up on ws://localhost:8080/ls.
-
 
 ### Start in production mode
 
