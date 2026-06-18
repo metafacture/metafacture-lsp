@@ -48,9 +48,7 @@ class MetafactureTextDocumentServiceTests {
     @Test
     @DisplayName("Completion returns non-null CompletableFuture")
     void testCompletionReturnsNonNullFuture() {
-        assertNotNull(
-                textDocumentService.completion(createCompletionParams()),
-                "Completion should return a non-null CompletableFuture");
+        assertNotNull(textDocumentService.completion(createCompletionParams()));
     }
 
     @Test
@@ -60,18 +58,16 @@ class MetafactureTextDocumentServiceTests {
         Either<List<CompletionItem>, CompletionList> completionResult =
                 textDocumentService.completion(createCompletionParams()).get();
         assertNotNull(completionResult, "Future should complete with non-null result");
-        assertTrue(
-                completionResult.isLeft(),
-                "Result should contain a list of completion items (Left)");
+        assertTrue(completionResult.isLeft());
     }
 
     @Test
     @DisplayName("Completion result contains a list of completion items")
     void testCompletionResultContainsItems() throws ExecutionException, InterruptedException {
         List<CompletionItem> items = getCompletionItems();
-        assertNotNull(items, "Completion items list should not be null");
-        assertFalse(items.isEmpty(), "Completion items list should not be empty");
-        assertTrue(items.size() > 0, "Should have at least one completion item");
+        assertNotNull(items);
+        assertFalse(items.isEmpty());
+        assertTrue(items.size() > 0);
     }
 
     @Test
@@ -81,10 +77,7 @@ class MetafactureTextDocumentServiceTests {
             assertNotNull(item.getLabel(), "Completion item label should not be null");
             assertFalse(item.getLabel().isEmpty(), "Completion item label should not be empty");
             assertNotNull(item.getInsertText(), "Completion item insertText should not be null");
-            assertEquals(
-                    item.getLabel(),
-                    item.getInsertText(),
-                    "insertText should match label for command names");
+            assertEquals(item.getLabel(), item.getInsertText());
         }
     }
 
@@ -93,10 +86,7 @@ class MetafactureTextDocumentServiceTests {
     void testCompletionItemsHaveCorrectKind() throws ExecutionException, InterruptedException {
         for (CompletionItem item : getCompletionItems()) {
             assertNotNull(item.getKind(), "Completion item kind should not be null");
-            assertEquals(
-                    CompletionItemKind.Function,
-                    item.getKind(),
-                    "All items should have CompletionItemKind.Function");
+            assertEquals(CompletionItemKind.Function, item.getKind());
         }
     }
 
@@ -106,11 +96,9 @@ class MetafactureTextDocumentServiceTests {
             throws ExecutionException, InterruptedException {
         for (CompletionItem item : getCompletionItems()) {
             assertNotNull(item.getDetail(), "Completion item detail should not be null");
-            assertTrue(
-                    item.getDetail().contains("|"),
-                    "Detail should contain pipe separators for structured format");
-            assertTrue(item.getDetail().contains("In:"), "Detail should contain 'In:' label");
-            assertTrue(item.getDetail().contains("Out:"), "Detail should contain 'Out:' label");
+            assertTrue(item.getDetail().contains("|"));
+            assertTrue(item.getDetail().contains("In:"));
+            assertTrue(item.getDetail().contains("Out:"));
         }
     }
 
@@ -124,9 +112,7 @@ class MetafactureTextDocumentServiceTests {
                 getCompletionItems().stream().map(CompletionItem::getLabel).toList();
         for (String expectedCommand :
                 new String[] {"decode-marc21", "encode-marc21", "pass-through"}) {
-            assertTrue(
-                    completionLabels.contains(expectedCommand),
-                    "Completion should contain '" + expectedCommand + "' command");
+            assertTrue(completionLabels.contains(expectedCommand));
         }
     }
 
@@ -135,11 +121,8 @@ class MetafactureTextDocumentServiceTests {
     void testDecodeMarc21HasCorrectInsertText() throws ExecutionException, InterruptedException {
         Optional<CompletionItem> decodeMarc21 =
                 findCompletionItemByLabel(getCompletionItems(), "decode-marc21");
-        assertTrue(decodeMarc21.isPresent(), "decode-marc21 command should exist");
-        assertEquals(
-                decodeMarc21.get().getLabel(),
-                decodeMarc21.get().getInsertText(),
-                "insertText should match the command label");
+        assertTrue(decodeMarc21.isPresent());
+        assertEquals(decodeMarc21.get().getLabel(), decodeMarc21.get().getInsertText());
     }
 
     @Test
@@ -148,12 +131,8 @@ class MetafactureTextDocumentServiceTests {
         Optional<CompletionItem> decodeMarc21 =
                 findCompletionItemByLabel(getCompletionItems(), "decode-marc21");
         assertTrue(decodeMarc21.isPresent(), "decode-marc21 command should exist");
-        assertTrue(
-                decodeMarc21.get().getDetail().contains("In:"),
-                "Detail should indicate input type");
-        assertTrue(
-                decodeMarc21.get().getDetail().contains("Out:"),
-                "Detail should indicate output type");
+        assertTrue(decodeMarc21.get().getDetail().contains("In:"));
+        assertTrue(decodeMarc21.get().getDetail().contains("Out:"));
     }
 
     @Test
@@ -161,11 +140,8 @@ class MetafactureTextDocumentServiceTests {
     void testAllCompletionItemsHaveNonEmptyLabels()
             throws ExecutionException, InterruptedException {
         for (CompletionItem item : getCompletionItems()) {
-            assertFalse(
-                    item.getLabel().isEmpty(), "Every completion item must have a non-empty label");
-            assertFalse(
-                    item.getLabel().isBlank(),
-                    "Every completion item label must contain non-whitespace characters");
+            assertFalse(item.getLabel().isEmpty());
+            assertFalse(item.getLabel().isBlank());
         }
     }
 
@@ -174,9 +150,6 @@ class MetafactureTextDocumentServiceTests {
     void testCompletionItemLabelsAreUnique() throws ExecutionException, InterruptedException {
         List<String> labels = getCompletionItems().stream().map(CompletionItem::getLabel).toList();
         long uniqueLabels = labels.stream().distinct().count();
-        assertEquals(
-                labels.size(),
-                uniqueLabels,
-                "All completion item labels should be unique, but found duplicates");
+        assertEquals(labels.size(), uniqueLabels);
     }
 }
