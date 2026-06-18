@@ -46,10 +46,15 @@ dependencies {
     implementation 'org.metafacture:metafacture-xml:7.0.0'
     implementation 'org.metafacture:metafacture-yaml:7.0.0'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    developmentOnly("org.springframework.boot:spring-boot-devtools")
 }
 
-tasks.named('test') {
+tasks.withType(Test) {
     useJUnitPlatform()
+    testLogging {
+        events 'passed', 'skipped', 'failed'
+        exceptionFormat = 'full'
+    }
 }
 
 bootJar {

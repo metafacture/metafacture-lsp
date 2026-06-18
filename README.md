@@ -13,26 +13,46 @@ Make sure you have Java installed in your workspace.
 
 Java: 21 or Above
 
-**Build**
+### Run all tests and other checks
+
+```
+./gradlew check
+```
+
+### Start in development mode
+
+In one terminal run
+
+```
+./gradlew compileJava -t
+```
+
+and in another terminal run
+
+```
+./gradlew bootRun
+```
+
+Websocket service will be up on ws://localhost:8080/ls.
+
+### Start in production mode
 
 ```
 ./gradlew clean build
-```
-
-**Run**
-
-```
 java -jar ./build/libs/metafacture-lsp-0.0.1-SNAPSHOT.jar
 ```
 
-Websocket service will be up on
+Websocket service will be up on ws://localhost:8080/ls.
+
+## Client
+
+To communicate with the server and test autocompletion, run https://github.com/NipunaMarcus/web-editor/tree/websocket-ls
 
 ```
-ws://localhost:8080/ls
+git clone https://github.com/NipunaMarcus/web-editor.git -b websocket-ls
+cd web-editor
+npm run build
+npm run dev
 ```
 
-**Client**
-
-To communicate with the server and test autocompletion, follow the instructions on https://github.com/NipunaMarcus/web-editor/tree/websocket-ls to start a simple web-editor.
-
-Note: You need to clone or switch to the `websocket-ls` branch. If `npm run build` fails, try `npm install` instead. Trigger suggestions by typing or with Ctrl+Space.
+If `npm run build` fails, try `npm install` instead. Open http://localhost:5173/. Trigger suggestions by typing or with Ctrl+Space.

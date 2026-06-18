@@ -45,10 +45,10 @@ public class MetafactureTextDocumentService implements TextDocumentService {
             var optionalOut = Optional.ofNullable(annotatedClass.getAnnotation(Out.class));
             completionItem.setDetail(
                     String.format(
-                            "%s | In: %s | Out: %s",
-                            optionalDesc.map(Description::value).orElse(""),
+                            "In: %s | Out: %s",
                             optionalIn.map(in -> in.value().getSimpleName()).orElse(""),
                             optionalOut.map(out -> out.value().getSimpleName()).orElse("")));
+            completionItem.setDocumentation(optionalDesc.map(Description::value).orElse(""));
             return completionItem;
         };
     }
