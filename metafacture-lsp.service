@@ -1,0 +1,14 @@
+[Unit]
+Description=metafacture-lsp
+After=syslog.target
+After=network.target
+
+[Service]
+ExecStart=/usr/lib/jvm/java-21-openjdk-amd64/bin/java -Dspring.profiles.active=production -jar /opt/metafacture-lsp.jar
+Restart=always
+StandardOutput=journal
+StandardError=journal+console
+SyslogIdentifier=metafacture-lsp
+
+[Install]
+WantedBy=multi-user.target
