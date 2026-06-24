@@ -53,7 +53,7 @@ sudo ln -sr build/libs/metafacture-lsp-0.0.1-SNAPSHOT.jar /opt/metafacture-lsp.j
 sudo ln -sr metafacture-lsp.service /etc/systemd/system/metafacture-lsp.service
 sudo systemctl daemon-reload
 ```
-
+You may want to modify the `metafacture-lsp.service` file in order to fit your needs. For example, to run the service on another port than the default `8080` add `-Dserver.port=<your-port-number>` to the `ExecStart` option.
 For debugging etc. start the application manually:
 
 ```
