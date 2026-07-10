@@ -40,59 +40,56 @@ class WebSocketWrapper implements IWebSocket {
     }
 }
 
-
 let client: LanguageClient | undefined;
+
+function createWebSocketConnection(): Promise<MessageTransports> {
+    return new Promise((resolve, reject) => {
+        const ws = new WebSocket(`wss://metafacture.org/ls`);
+        
+        // Debug: WebSocket events
+        ws.on('open', () => {
+            console.log('[WebSocket] Connection established to metafacture.org');
+        });
+        ws.on('error', (error) => {
+            console.error('[WebSocket] Error:', error.message);
+            reject(error);
+        });
+        ws.on('close', (code, reason) => {
+            console.log(`[WebSocket] Connection closed: ${code} - ${reason}`);
+        });
+
+        // Wait for WebSocket to be open
+        ws.once('open', async () => {
+            console.log('[WebSocket] Creating message reader/writer');
+
+            const socketModule = await import('vscode-ws-jsonrpc/socket');
+            const wrappedWs = new WebSocketWrapper(ws);
+            const reader = new socketModule.WebSocketMessageReader(wrappedWs);
+            const writer = new socketModule.WebSocketMessageWriter(wrappedWs);
+
+            resolve({
+                reader,
+                writer,
+            } as MessageTransports);
+        });
+    });
+}
 
 export async function activate(context: vscode.ExtensionContext) {
     console.log('Activating metafacture-lsp extension...');
 
-    const ws = new WebSocket(`wss://metafacture.org/ls`);
-    
-    // Debug: WebSocket events
-    ws.on('open', () => {
-        console.log('[WebSocket] Connection established to test.metafacture.org');
-    });
-    ws.on('error', (error) => {
-        console.error('[WebSocket] Error:', error.message);
-    });
-    ws.on('close', () => {
-        console.log('[WebSocket] Connection closed');
-    });
-
-    const serverOptions: ServerOptions = async () => {
-        // Wait for WebSocket to be open
-        await new Promise<void>((resolve, reject) => {
-            ws.on('open', () => resolve());
-            ws.on('error', (error) => reject(error));
-        });
-
-        console.log('[WebSocket] Creating message reader/writer');
-
-        const socketModule = await import('vscode-ws-jsonrpc/socket');
-        const wrappedWs = new WebSocketWrapper(ws);
-        const reader = new socketModule.WebSocketMessageReader(wrappedWs);
-        const writer = new socketModule.WebSocketMessageWriter(wrappedWs);
-
-        return {
-            reader,
-            writer,
-        } as MessageTransports;
-    };
+    const serverOptions: ServerOptions = () => createWebSocketConnection();
     
     const clientOptions = { 
         documentSelector: [{ scheme: 'file', language: 'flux' }],
         synchronize: {
              // Notify the server about file changes to '.clientrc files contained in the workspace
             fileEvents: vscode.workspace.createFileSystemWatcher('**/.clientrc')
-        }
+        },
+        outputChannelName: 'metafacture-flux',
     };
 
     client = new LanguageClient('metafacture-flux', 'Metafacture Flux Language Server', serverOptions, clientOptions);
-    
-    // Debug: Client state changes
-    client.onDidChangeState((e) => {
-        console.log('[LanguageClient] State changed:', e.oldState, '->', e.newState);
-    });
     
     await client.start();
     console.log('[LanguageClient] Started successfully');
