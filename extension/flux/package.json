@@ -12,6 +12,9 @@
         "Programming Languages"
     ],
     "main": "./out/extension",
+    "activationEvents": [
+        "onLanguage:flux"
+    ],
     "contributes": {
         "languages": [
             {
