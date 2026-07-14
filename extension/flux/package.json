@@ -6,7 +6,7 @@
     "publisher": "metafacture",
     "license": "Apache-2.0",
     "engines": {
-        "vscode": "^1.100.0"
+        "vscode": "^1.118.0"
     },
     "categories": [
         "Programming Languages"
