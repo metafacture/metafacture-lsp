@@ -1,77 +1,83 @@
 import * as vscode from 'vscode';
 import WebSocket from 'ws';
-import { Disposable } from 'vscode-jsonrpc';
-
-// Import the language client, language client options and server options from VSCode language client.
 import { LanguageClient, ServerOptions, MessageTransports } from 'vscode-languageclient/node';
-
-interface IWebSocket extends Disposable {
-    send(content: string): void;
-    onMessage(cb: (data: any) => void): void;
-    onError(cb: (reason: any) => void): void;
-    onClose(cb: (code: number, reason: string) => void): void;
-}
-
-class WebSocketWrapper implements IWebSocket {
-    private ws: WebSocket;
-
-    constructor(ws: WebSocket) {
-        this.ws = ws;
-    }
-
-    send(content: string): void {
-        this.ws.send(content);
-    }
-
-    onMessage(cb: (data: any) => void): void {
-        this.ws.on('message', (data) => cb(data));
-    }
-
-    onError(cb: (reason: any) => void): void {
-        this.ws.on('error', (error) => cb(error));
-    }
-
-    onClose(cb: (code: number, reason: string) => void): void {
-        this.ws.on('close', (code, reason) => cb(code, reason));
-    }
-
-    dispose(): void {
-        this.ws.close();
-    }
-}
+import { ErrorAction, CloseAction } from 'vscode-languageclient';
 
 let client: LanguageClient | undefined;
 
 function createWebSocketConnection(): Promise<MessageTransports> {
     return new Promise((resolve, reject) => {
-        const ws = new WebSocket(`wss://metafacture.org/ls`);
-        
-        // Debug: WebSocket events
-        ws.on('open', () => {
-            console.log('[WebSocket] Connection established to metafacture.org');
-        });
-        ws.on('error', (error) => {
-            console.error('[WebSocket] Error:', error.message);
+        const ws = new WebSocket('wss://metafacture.org/ls');
+
+        const timeout = setTimeout(() => {
+            cleanup();
+            reject(new Error('Connection timeout'));
+        }, 30000);
+
+        const cleanup = () => {
+            clearTimeout(timeout);
+            ws.removeAllListeners('open');
+            ws.removeAllListeners('error');
+            ws.removeAllListeners('close');
+        };
+
+        const handleOpen = () => {
+            cleanup();
+            console.log('[WebSocket] connected to wss://metafacture.org/ls');
+            
+            import('vscode-ws-jsonrpc').then(({ WebSocketMessageReader, WebSocketMessageWriter }) => {
+                // Create a wrapper socket that suppresses errors on close code 1006
+                const onCloseCallbacks: Array<(code: number, reason: string) => void> = [];
+                
+                const wrappedSocket = {
+                    send: (content: string) => ws.send(content),
+                    onMessage: (cb: (data: string) => void) => ws.on('message', cb),
+                    onError: (cb: (error: any) => void) => ws.on('error', cb),
+                    onClose: (cb: (code: number, reason: string) => void) => {
+                        onCloseCallbacks.push(cb);
+                        return { dispose: () => {
+                            const idx = onCloseCallbacks.indexOf(cb);
+                            if (idx > -1) onCloseCallbacks.splice(idx, 1);
+                        }};
+                    },
+                    dispose: () => ws.close()
+                };
+                
+                // Patch the original socket's onClose to suppress errors on code 1006
+                ws.on('close', (code: number, reason: unknown) => {
+                    const reasonText = typeof reason === 'string' ? reason : Buffer.isBuffer(reason) ? reason.toString('utf8') : String(reason);
+                    const reportedCode = code === 1006 ? 1000 : code;
+                    if (reportedCode === 1000) {
+                        console.log(`[WebSocket] Closed normally${code === 1006 ? ' (mapped from 1006)' : ''}`);
+                    } else {
+                        console.log(`[WebSocket] Closed with code ${code}, reporting ${reportedCode}`);
+                    }
+                    onCloseCallbacks.forEach(cb => cb(reportedCode, reasonText));
+                });
+                
+                const reader = new WebSocketMessageReader(wrappedSocket as any);
+                const writer = new WebSocketMessageWriter(wrappedSocket as any);
+                resolve({ reader, writer });
+            }).catch(reject);
+        };
+
+        const handleError = (error: Error) => {
+            cleanup();
+            console.error('[WebSocket] connection error', error);
             reject(error);
-        });
-        ws.on('close', (code, reason) => {
-            console.log(`[WebSocket] Connection closed: ${code} - ${reason}`);
-        });
+        };
 
-        // Wait for WebSocket to be open
-        ws.once('open', async () => {
-            console.log('[WebSocket] Creating message reader/writer');
+        const handleClose = (code: number, reason: Buffer) => {
+            cleanup();
+            console.warn('[WebSocket] closed before open', { code, reason: reason?.toString() });
+            if (ws.readyState !== WebSocket.OPEN) {
+                reject(new Error(`WebSocket closed before open: ${code} ${reason?.toString()}`));
+            }
+        };
 
-            const socketModule = await import('vscode-ws-jsonrpc/socket');
-            const wrappedWs = new WebSocketWrapper(ws);
-            const reader = new socketModule.WebSocketMessageReader(wrappedWs);
-            const writer = new socketModule.WebSocketMessageWriter(wrappedWs);
-
-            resolve({
-                reader,
-                writer,
-            } as MessageTransports);
-        });
+        ws.once('open', handleOpen);
+        ws.once('error', handleError);
+        ws.once('close', handleClose);
     });
 }
 
@@ -87,7 +93,20 @@ export async function activate(context: vscode.ExtensionContext) {
             fileEvents: vscode.workspace.createFileSystemWatcher('**/.clientrc')
         },
         outputChannelName: 'metafacture-flux',
+        // Handle errors/close to avoid noisy automatic restarts that cause shutdown on disposed connections
+        errorHandler: {
+            error: (error, message, count) => {
+                return { action: ErrorAction.Continue };
+            },
+            closed: () => {
+                // Allow the client to restart on socket close (transient server/network errors)
+                return { action: CloseAction.Restart };
+            }
+        }
     };
+
+    // Limit automatic restart attempts to avoid rapid infinite restart loops
+    (clientOptions as any).connectionOptions = { maxRestartCount: 5 };
 
     client = new LanguageClient('metafacture-flux', 'Metafacture Flux Language Server', serverOptions, clientOptions);
     
@@ -99,7 +118,16 @@ export async function activate(context: vscode.ExtensionContext) {
 export async function deactivate() { 
     console.log('Deactivating metafacture-lsp extension...');
     if (client) {
-        await client.stop();
-        console.log('Language client stopped');
+        try {
+            await client.stop();
+            console.log('Language client stopped successfully');
+        } catch (error: any) {
+            // Ignore "Connection is disposed" errors during shutdown
+            if (error && (error.message?.includes('disposed') || error.message?.includes('Connection'))) {
+                console.log('Language client stop skipped (connection already disposed)');
+            } else {
+                console.error('Error stopping language client:', error);
+            }
+        }
     }
 }
