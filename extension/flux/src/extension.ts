@@ -95,7 +95,7 @@ export async function activate(context: vscode.ExtensionContext) {
         outputChannelName: 'metafacture-flux',
         // Handle errors/close to avoid noisy automatic restarts that cause shutdown on disposed connections
         errorHandler: {
-            error: (error, message, count) => {
+            error: () => {
                 return { action: ErrorAction.Continue };
             },
             closed: () => {
