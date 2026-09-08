@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>fileTypes</key>
+	<array>
+		<string>*.flux</string>
+	</array>
+	<key>name</key>
+	<string>flux</string>
+	<key>patterns</key>
+	<array>
+		<dict>
+			<key>name</key>
+			<string>variable.language.flux</string>
+			<key>match</key>
+			<string>\bdefault\b</string>
+		</dict>
+		<dict>
+			<key>name</key>
+			<string>keyword.control.flux</string>
+			<key>match</key>
+			<string>=|\+|\|</string>
+		</dict>
+		<dict>
+			<key>name</key>
+			<string>comment.line.double-slash</string>
+			<key>begin</key>
+			<string>(^|\s)//</string>
+			<key>end</key>
+			<string>$</string>
+		</dict>
+		<dict>
+			<key>name</key>
+			<string>string.quoted.single</string>
+			<key>begin</key>
+			<string>'</string>
+			<key>end</key>
+			<string>'</string>
+		</dict>
+		<dict>
+			<key>name</key>
+			<string>string.quoted.double</string>
+			<key>begin</key>
+			<string>"</string>
+			<key>end</key>
+			<string>"</string>
+		</dict>
+	</array>
+	<key>scopeName</key>
+	<string>text.flux</string>
+</dict>
+</plist>

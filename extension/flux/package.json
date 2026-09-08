@@ -1,0 +1,58 @@
+{
+    "name": "flux",
+    "displayName": "flux",
+    "description": "Language Support for Metafacture Flux. For more information, visit https://metafacture.org",
+    "version": "0.1.0",
+    "publisher": "metafacture",
+    "license": "Apache-2.0",
+    "engines": {
+        "vscode": "^1.118.0"
+    },
+    "categories": [
+        "Programming Languages"
+    ],
+    "main": "./out/extension",
+    "activationEvents": [
+        "onLanguage:flux"
+    ],
+    "contributes": {
+        "languages": [
+            {
+                "id": "flux",
+                "aliases": [
+                    "flux"
+                ],
+                "extensions": [
+                    ".flux"
+                ],
+                "configuration": "./flux.configuration.json"
+            }
+        ],
+        "grammars": [
+            {
+                "language": "flux",
+                "scopeName": "text.flux",
+                "path": "./flux.tmLanguage"
+            }
+        ]
+    },
+    "scripts": {
+        "vscode:prepublish": "tsc -p ./",
+        "compile": "tsc -watch -p ./"
+    },
+    "devDependencies": {
+        "@types/node": "^12.12.2",
+        "@types/vscode": "^1.118.0",
+        "@types/ws": "^7.4.0",
+        "typescript": "^5.9.2"
+    },
+    "dependencies": {
+        "vscode-languageclient": "^10.0.1",
+        "vscode-ws-jsonrpc": "^3.5.0",
+        "ws": "8.21.0"
+    },
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/metafacture/metafacture-lsp.git"
+    }
+}

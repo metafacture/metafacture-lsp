@@ -75,3 +75,27 @@ npm run dev
 ```
 
 If `npm run build` fails, try `npm install` instead. Open http://localhost:5173/. Trigger suggestions by typing or with Ctrl+Space.
+
+## VSCode extension
+
+The folder extension/flux contains a adapted copy of https://github.com/metafacture/metafacture-flux/tree/main/org.metafacture.flux.vsc. The project  provides an extension for Visual Studio Code / Codium for `flux` via the language server protocol (LSP). The extension connects to a language server using websockets (`wss:metafacure.org/ls`).
+
+1. Install Visual Studio Code / alternative: VS Codium
+2. Install Node.js (including npm)
+3. In metafacture-lsp/extension/flux execute:
+   `npm install`
+
+To start the extension in development mode, follow A. To create an vsix file to install the extension permanently follow B.
+
+A) Run in dev mode:
+1. Open metafacture-lsp/extensions/flux/src/extension.ts in Visual Studio Code / Codium
+2. Launch vscode extension by pressing F5 (opens new window of Visual Studio Code)
+3. Open new file (file-ending .flux) or open existing flux-file
+
+B) Install vsix file:
+1. Install vsce: `npm install -g vsce`
+2. In metafacture-lsp/extension/flux execute: `vsce package`
+vsce will create a vsix file in the vsc directory which can be used for installation:
+3. Open VS Code / Codium
+4. Click 'Extensions' section
+5. Click menu bar and choose 'Install from VSIX...'

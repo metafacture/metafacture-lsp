@@ -4,3 +4,5 @@
 /build
 /.gradle
 /bin
+/extension/flux/node_modules
+/extension/flux/out
