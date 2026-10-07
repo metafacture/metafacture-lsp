@@ -27,6 +27,7 @@ dependencies {
     implementation 'org.metafacture:metafacture-elasticsearch:7.0.0'
     implementation 'org.metafacture:metafacture-files:7.0.0'
     implementation 'org.metafacture:metafacture-flowcontrol:7.0.0'
+    implementation 'org.metafacture:metafacture-formatting:7.0.0'
     implementation 'org.metafacture:metafacture-formeta:7.0.0'
     implementation 'org.metafacture:metafacture-framework:7.0.0'
     implementation 'org.metafacture:metafacture-html:7.0.0'
