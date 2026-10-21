@@ -14,10 +14,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
-    - name: Set up Node 14
+    - name: Set up Node 20
       uses: actions/setup-node@v4
       with:
-        node-version: 14
+        node-version: 20
     - name: Set up vsce
       run: npm install -g vsce
     - name: Set up JDK 21
