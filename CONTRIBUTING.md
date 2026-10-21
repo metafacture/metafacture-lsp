@@ -17,6 +17,7 @@ The following is a set of guidelines for contributing to Metafacture LSP and how
 * [From Backlog to Done](#from-backlog-to-done)
 * [Definition of Ready](#definition-of-ready)
 * [Definition of Done](#definition-of-done)
+* [Publish extension](#publish-extension)
 
 ## How can I contribute?
 
@@ -146,4 +147,8 @@ The *Definition of Done* describes a list of criteria which issues have to meet 
 - Pull request is reviewed and approved
 - Functionality is merged into the main branch
 - Deployed to production
+
+### Publish extension
+
+We use semantic versioning (see https://semver.org/) for versioning the flux extension. When merging a pull request into main, the extension is published to the repository [metafacture/metafacture.github.io](https://github.com/metafacture/metafacture.github.io), folder: ide-extensions by the workflow [publish.yml](./.github/workflows/publish.yml).
 
