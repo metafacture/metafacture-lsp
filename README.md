@@ -46,7 +46,9 @@ Websocket service will be up on ws://localhost:8080/ls.
 
 ### Production setup
 
-Initial service setup (required only once):
+First, create a dedicated user for the service in advance and change the default user in `metafacture-lsp.service` file.
+
+Then, initially set up the service (required only once):
 
 ```
 sudo ln -sr build/libs/metafacture-lsp-0.0.1-SNAPSHOT.jar /opt/metafacture-lsp.jar
