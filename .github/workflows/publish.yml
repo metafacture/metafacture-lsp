@@ -1,10 +1,13 @@
 
-name: Build and publish
+name: Publish
 
 on:
   push:
     branches:
       - main
+    paths:
+      - 'extension/flux/**'
+      - 'src/**'
 
 jobs:
   build-and-publish:
