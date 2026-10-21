@@ -1,6 +1,6 @@
 {
-    "name": "flux",
-    "displayName": "flux",
+    "name": "metafacture-flux",
+    "displayName": "Metafacture Flux",
     "description": "Language Support for Metafacture Flux. For more information, visit https://metafacture.org",
     "version": "0.1.0",
     "publisher": "metafacture",
