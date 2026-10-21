@@ -1,8 +1,8 @@
 {
-    "name": "flux",
-    "displayName": "flux",
+    "name": "metafacture-flux",
+    "displayName": "Metafacture Flux",
     "description": "Language Support for Metafacture Flux. For more information, visit https://metafacture.org",
-    "version": "0.1.0",
+    "version": "1.0.0",
     "publisher": "metafacture",
     "license": "Apache-2.0",
     "engines": {
@@ -11,6 +11,7 @@
     "categories": [
         "Programming Languages"
     ],
+    "icon": "images/icon.png",
     "main": "./out/extension",
     "activationEvents": [
         "onLanguage:flux"
