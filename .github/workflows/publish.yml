@@ -8,6 +8,7 @@ on:
     paths:
       - 'extension/flux/**'
       - 'src/**'
+      - '.github/workflows/**'
 
 jobs:
   build-and-publish:
