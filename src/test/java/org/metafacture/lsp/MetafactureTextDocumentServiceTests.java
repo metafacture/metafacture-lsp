@@ -14,11 +14,21 @@ import org.eclipse.lsp4j.CompletionItemKind;
 import org.eclipse.lsp4j.CompletionList;
 import org.eclipse.lsp4j.CompletionParams;
 import org.eclipse.lsp4j.CompletionTriggerKind;
+import org.eclipse.lsp4j.DidChangeTextDocumentParams;
+import org.eclipse.lsp4j.DidOpenTextDocumentParams;
+import org.eclipse.lsp4j.InitializeParams;
 import org.eclipse.lsp4j.Position;
+import org.eclipse.lsp4j.SemanticTokenTypes;
+import org.eclipse.lsp4j.SemanticTokens;
+import org.eclipse.lsp4j.SemanticTokensParams;
+import org.eclipse.lsp4j.SemanticTokensWithRegistrationOptions;
+import org.eclipse.lsp4j.TextDocumentContentChangeEvent;
 import org.eclipse.lsp4j.TextDocumentIdentifier;
+import org.eclipse.lsp4j.TextDocumentItem;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.metafacture.lsp.langserver.MetafactureLanguageServer;
 import org.metafacture.lsp.langserver.MetafactureTextDocumentService;
 
 @DisplayName("MetafactureTextDocumentService Completion Tests")
@@ -151,5 +161,89 @@ class MetafactureTextDocumentServiceTests {
         List<String> labels = getCompletionItems().stream().map(CompletionItem::getLabel).toList();
         long uniqueLabels = labels.stream().distinct().count();
         assertEquals(labels.size(), uniqueLabels);
+    }
+
+    @Test
+    @DisplayName("Semantic tokens highlight Flux line comments outside strings")
+    void testSemanticTokensHighlightCommentsOutsideStrings()
+            throws ExecutionException, InterruptedException {
+        String text = "// first\r\n\"not // a comment\" pass-through // second\r\npass-through";
+        String uri = "file:///semantic-tokens.flux";
+        DidOpenTextDocumentParams openParams = new DidOpenTextDocumentParams();
+        openParams.setTextDocument(new TextDocumentItem(uri, "flux", 1, text));
+        textDocumentService.didOpen(openParams);
+
+        SemanticTokensParams params = new SemanticTokensParams();
+        params.setTextDocument(new TextDocumentIdentifier(uri));
+        List<Integer> data = textDocumentService.semanticTokensFull(params).get().getData();
+        int secondComment = text.indexOf("// second");
+        int secondLineStart = text.lastIndexOf('\n', secondComment) + 1;
+        int secondLineEnd = text.indexOf("\r\n", secondComment);
+
+        assertEquals(
+                List.of(
+                        0,
+                        0,
+                        8,
+                        0,
+                        0,
+                        1,
+                        secondComment - secondLineStart,
+                        secondLineEnd - secondComment,
+                        0,
+                        0),
+                data);
+    }
+
+    @Test
+    @DisplayName("Semantic tokens do not highlight HTTP URLs as comments")
+    void testSemanticTokensDoNotHighlightUrlsAsComments()
+            throws ExecutionException, InterruptedException {
+        String url = "https://lobid.org/gnd/11942150X";
+        String text = url + "\n\"" + url + "\"\n// actual comment";
+        String uri = "file:///semantic-tokens-url.flux";
+        DidOpenTextDocumentParams openParams = new DidOpenTextDocumentParams();
+        openParams.setTextDocument(new TextDocumentItem(uri, "flux", 1, text));
+        textDocumentService.didOpen(openParams);
+
+        SemanticTokensParams params = new SemanticTokensParams();
+        params.setTextDocument(new TextDocumentIdentifier(uri));
+
+        assertEquals(
+                List.of(2, 0, "// actual comment".length(), 0, 0),
+                textDocumentService.semanticTokensFull(params).get().getData());
+    }
+
+    @Test
+    @DisplayName("Semantic tokens use updated document content")
+    void testSemanticTokensUpdateAfterDocumentChange()
+            throws ExecutionException, InterruptedException {
+        String uri = "file:///semantic-tokens-change.flux";
+        DidOpenTextDocumentParams openParams = new DidOpenTextDocumentParams();
+        openParams.setTextDocument(new TextDocumentItem(uri, "flux", 1, "pass-through"));
+        textDocumentService.didOpen(openParams);
+
+        DidChangeTextDocumentParams changeParams = new DidChangeTextDocumentParams();
+        changeParams.setTextDocument(new org.eclipse.lsp4j.VersionedTextDocumentIdentifier(uri, 2));
+        changeParams.setContentChanges(List.of(new TextDocumentContentChangeEvent("// updated")));
+        textDocumentService.didChange(changeParams);
+
+        SemanticTokensParams params = new SemanticTokensParams();
+        params.setTextDocument(new TextDocumentIdentifier(uri));
+        SemanticTokens tokens = textDocumentService.semanticTokensFull(params).get();
+
+        assertEquals(List.of(0, 0, 10, 0, 0), tokens.getData());
+    }
+
+    @Test
+    @DisplayName("Language server advertises comment semantic tokens")
+    void testServerAdvertisesCommentSemanticTokens() throws Exception {
+        var result = new MetafactureLanguageServer().initialize(new InitializeParams()).get();
+        SemanticTokensWithRegistrationOptions options =
+                result.getCapabilities().getSemanticTokensProvider();
+
+        assertEquals(List.of(SemanticTokenTypes.Comment), options.getLegend().getTokenTypes());
+        assertTrue(options.getFull().isLeft());
+        assertTrue(options.getFull().getLeft());
     }
 }

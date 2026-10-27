@@ -1,9 +1,13 @@
 package org.metafacture.lsp.langserver;
 
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import org.eclipse.lsp4j.CompletionOptions;
 import org.eclipse.lsp4j.InitializeParams;
 import org.eclipse.lsp4j.InitializeResult;
+import org.eclipse.lsp4j.SemanticTokenTypes;
+import org.eclipse.lsp4j.SemanticTokensLegend;
+import org.eclipse.lsp4j.SemanticTokensWithRegistrationOptions;
 import org.eclipse.lsp4j.ServerCapabilities;
 import org.eclipse.lsp4j.TextDocumentSyncKind;
 import org.eclipse.lsp4j.services.LanguageClient;
@@ -30,6 +34,12 @@ public class MetafactureLanguageServer implements LanguageServer, LanguageClient
         // Set the capabilities of the LS to inform the client.
         initializeResult.getCapabilities().setTextDocumentSync(TextDocumentSyncKind.Full);
         initializeResult.getCapabilities().setCompletionProvider(new CompletionOptions());
+        SemanticTokensWithRegistrationOptions semanticTokensOptions =
+                new SemanticTokensWithRegistrationOptions();
+        semanticTokensOptions.setLegend(
+                new SemanticTokensLegend(List.of(SemanticTokenTypes.Comment), List.of()));
+        semanticTokensOptions.setFull(true);
+        initializeResult.getCapabilities().setSemanticTokensProvider(semanticTokensOptions);
         return CompletableFuture.supplyAsync(() -> initializeResult);
     }
 
