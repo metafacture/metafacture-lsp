@@ -164,10 +164,13 @@ class MetafactureTextDocumentServiceTests {
     }
 
     @Test
-    @DisplayName("Semantic tokens highlight Flux line comments outside strings")
+    @DisplayName("Semantic tokens use Flux parser comment positions")
     void testSemanticTokensHighlightCommentsOutsideStrings()
             throws ExecutionException, InterruptedException {
-        String text = "// first\r\n\"not // a comment\" pass-through // second\r\npass-through";
+        String text =
+                "// first\r\n"
+                        + "> | pass-through(\"not // a comment\") | encode-marc21; // second\r\n"
+                        + "// third";
         String uri = "file:///semantic-tokens.flux";
         DidOpenTextDocumentParams openParams = new DidOpenTextDocumentParams();
         openParams.setTextDocument(new TextDocumentItem(uri, "flux", 1, text));
@@ -178,7 +181,6 @@ class MetafactureTextDocumentServiceTests {
         List<Integer> data = textDocumentService.semanticTokensFull(params).get().getData();
         int secondComment = text.indexOf("// second");
         int secondLineStart = text.lastIndexOf('\n', secondComment) + 1;
-        int secondLineEnd = text.indexOf("\r\n", secondComment);
 
         assertEquals(
                 List.of(
@@ -189,7 +191,12 @@ class MetafactureTextDocumentServiceTests {
                         0,
                         1,
                         secondComment - secondLineStart,
-                        secondLineEnd - secondComment,
+                        "// second".length(),
+                        0,
+                        0,
+                        1,
+                        0,
+                        "// third".length(),
                         0,
                         0),
                 data);
@@ -200,7 +207,10 @@ class MetafactureTextDocumentServiceTests {
     void testSemanticTokensDoNotHighlightUrlsAsComments()
             throws ExecutionException, InterruptedException {
         String url = "https://lobid.org/gnd/11942150X";
-        String text = url + "\n\"" + url + "\"\n// actual comment";
+        String text =
+                "default url = \""
+                        + url
+                        + "\";\n> | pass-through | encode-marc21; // actual comment";
         String uri = "file:///semantic-tokens-url.flux";
         DidOpenTextDocumentParams openParams = new DidOpenTextDocumentParams();
         openParams.setTextDocument(new TextDocumentItem(uri, "flux", 1, text));
@@ -208,9 +218,30 @@ class MetafactureTextDocumentServiceTests {
 
         SemanticTokensParams params = new SemanticTokensParams();
         params.setTextDocument(new TextDocumentIdentifier(uri));
+        int commentStart = text.lastIndexOf("// actual comment");
+        int nextLineStart = text.lastIndexOf('\n', commentStart) + 1;
 
         assertEquals(
-                List.of(2, 0, "// actual comment".length(), 0, 0),
+                List.of(1, commentStart - nextLineStart, "// actual comment".length(), 0, 0),
+                textDocumentService.semanticTokensFull(params).get().getData());
+    }
+
+    @Test
+    @DisplayName("Semantic tokens include comments in incomplete Flux documents")
+    void testSemanticTokensIncludeCommentsInIncompleteFlux()
+            throws ExecutionException, InterruptedException {
+        String comment = "// comment while editing";
+        String uri = "file:///semantic-tokens-incomplete.flux";
+        DidOpenTextDocumentParams openParams = new DidOpenTextDocumentParams();
+        openParams.setTextDocument(
+                new TextDocumentItem(uri, "flux", 1, "pass-through |\n" + comment));
+        textDocumentService.didOpen(openParams);
+
+        SemanticTokensParams params = new SemanticTokensParams();
+        params.setTextDocument(new TextDocumentIdentifier(uri));
+
+        assertEquals(
+                List.of(1, 0, comment.length(), 0, 0),
                 textDocumentService.semanticTokensFull(params).get().getData());
     }
 

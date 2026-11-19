@@ -8,6 +8,10 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 import java.util.stream.Stream;
+import org.antlr.runtime.ANTLRStringStream;
+import org.antlr.runtime.CommonTokenStream;
+import org.antlr.runtime.RecognitionException;
+import org.antlr.runtime.Token;
 import org.eclipse.lsp4j.CompletionItem;
 import org.eclipse.lsp4j.CompletionItemKind;
 import org.eclipse.lsp4j.CompletionList;
@@ -21,6 +25,9 @@ import org.eclipse.lsp4j.SemanticTokensParams;
 import org.eclipse.lsp4j.TextDocumentContentChangeEvent;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.eclipse.lsp4j.services.TextDocumentService;
+import org.metafacture.flux.FluxParseException;
+import org.metafacture.flux.parser.FluxLexer;
+import org.metafacture.flux.parser.FluxParser;
 import org.metafacture.framework.FluxCommand;
 import org.metafacture.framework.annotations.Description;
 import org.metafacture.framework.annotations.In;
@@ -48,73 +55,44 @@ public class MetafactureTextDocumentService implements TextDocumentService {
             return tokens;
         }
 
+        CommonTokenStream tokenStream =
+                new CommonTokenStream(new FluxLexer(new ANTLRStringStream(text)));
+        FluxParser parser = new FluxParser(tokenStream);
+        try {
+            parser.flux();
+        } catch (RecognitionException | FluxParseException exception) {
+            // Incomplete Flux documents can still contain comments worth highlighting.
+        }
+        tokenStream.fill();
+
         int previousLine = 0;
         int previousStart = 0;
-        int line = 0;
-        int lineStart = 0;
-        while (lineStart <= text.length()) {
-            int newline = text.indexOf('\n', lineStart);
-            int lineEnd = newline == -1 ? text.length() : newline;
-            if (lineEnd > lineStart && text.charAt(lineEnd - 1) == '\r') {
-                lineEnd--;
+        for (Token token : tokenStream.getTokens()) {
+            if (token.getType() != FluxLexer.LINE_COMMENT) {
+                continue;
             }
 
-            char quote = 0;
-            boolean escaped = false;
-            for (int index = lineStart; index < lineEnd; index++) {
-                char current = text.charAt(index);
-                if (quote != 0) {
-                    if (escaped) {
-                        escaped = false;
-                    } else if (current == '\\') {
-                        escaped = true;
-                    } else if (current == quote) {
-                        quote = 0;
-                    }
-                } else if (current == '\'' || current == '"') {
-                    quote = current;
-                } else if (current == '/'
-                        && index + 1 < lineEnd
-                        && text.charAt(index + 1) == '/'
-                        && !isHttpUrl(text, index)
-                        && (index == lineStart || Character.isWhitespace(text.charAt(index - 1)))) {
-                    int start = index - lineStart;
-                    tokens.add(line - previousLine);
-                    tokens.add(line == previousLine ? start - previousStart : start);
-                    tokens.add(lineEnd - index);
-                    tokens.add(0);
-                    tokens.add(0);
-                    previousLine = line;
-                    previousStart = start;
-                    break;
-                }
+            String comment = token.getText();
+            int length = comment.length();
+            while (length > 0
+                    && (comment.charAt(length - 1) == '\r' || comment.charAt(length - 1) == '\n')) {
+                length--;
+            }
+            if (length == 0) {
+                continue;
             }
 
-            if (newline == -1) {
-                break;
-            }
-            line++;
-            lineStart = newline + 1;
+            int line = token.getLine() - 1;
+            int start = token.getCharPositionInLine();
+            tokens.add(line - previousLine);
+            tokens.add(line == previousLine ? start - previousStart : start);
+            tokens.add(length);
+            tokens.add(0);
+            tokens.add(0);
+            previousLine = line;
+            previousStart = start;
         }
         return tokens;
-    }
-
-    private boolean isHttpUrl(String text, int slashIndex) {
-        int colonIndex = slashIndex - 1;
-        if (colonIndex < 0 || text.charAt(colonIndex) != ':') {
-            return false;
-        }
-
-        int schemeStart = colonIndex - 1;
-        while (schemeStart >= 0
-                && (Character.isLetterOrDigit(text.charAt(schemeStart))
-                        || text.charAt(schemeStart) == '+'
-                        || text.charAt(schemeStart) == '-'
-                        || text.charAt(schemeStart) == '.')) {
-            schemeStart--;
-        }
-        String scheme = text.substring(schemeStart + 1, colonIndex);
-        return scheme.equalsIgnoreCase("http") || scheme.equalsIgnoreCase("https");
     }
 
     private Stream<CompletionItem> getCompletionItems() {
