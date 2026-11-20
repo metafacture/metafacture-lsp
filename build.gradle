@@ -50,6 +50,7 @@ dependencies {
     implementation 'org.metafacture:metafacture-xml:9.0.0'
     implementation 'org.metafacture:metafacture-yaml:9.0.0'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
     developmentOnly("org.springframework.boot:spring-boot-devtools")
 }
 
