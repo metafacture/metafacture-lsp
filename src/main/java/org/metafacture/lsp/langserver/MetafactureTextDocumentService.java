@@ -10,7 +10,6 @@ import java.util.function.Function;
 import java.util.stream.Stream;
 import org.antlr.runtime.ANTLRStringStream;
 import org.antlr.runtime.CommonTokenStream;
-import org.antlr.runtime.RecognitionException;
 import org.antlr.runtime.Token;
 import org.eclipse.lsp4j.CompletionItem;
 import org.eclipse.lsp4j.CompletionItemKind;
@@ -25,9 +24,7 @@ import org.eclipse.lsp4j.SemanticTokensParams;
 import org.eclipse.lsp4j.TextDocumentContentChangeEvent;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.eclipse.lsp4j.services.TextDocumentService;
-import org.metafacture.flux.FluxParseException;
 import org.metafacture.flux.parser.FluxLexer;
-import org.metafacture.flux.parser.FluxParser;
 import org.metafacture.framework.FluxCommand;
 import org.metafacture.framework.annotations.Description;
 import org.metafacture.framework.annotations.In;
@@ -57,12 +54,6 @@ public class MetafactureTextDocumentService implements TextDocumentService {
 
         CommonTokenStream tokenStream =
                 new CommonTokenStream(new FluxLexer(new ANTLRStringStream(text)));
-        FluxParser parser = new FluxParser(tokenStream);
-        try {
-            parser.flux();
-        } catch (RecognitionException | FluxParseException exception) {
-            // Incomplete Flux documents can still contain comments worth highlighting.
-        }
         tokenStream.fill();
 
         int previousLine = 0;
@@ -84,11 +75,16 @@ public class MetafactureTextDocumentService implements TextDocumentService {
 
             int line = token.getLine() - 1;
             int start = token.getCharPositionInLine();
+            // LSP semantic token:
+            // delta line (the difference from the previous comment’s line)
             tokens.add(line - previousLine);
+            // delta/start column
+            // on the same line as the previous comment = start difference from that comment
+            // on another line as the previous comment = absolute character position)
             tokens.add(line == previousLine ? start - previousStart : start);
             tokens.add(length);
-            tokens.add(0);
-            tokens.add(0);
+            tokens.add(FluxSemanticTokens.INSTANCE.commentType());
+            tokens.add(FluxSemanticTokens.INSTANCE.noModifiers());
             previousLine = line;
             previousStart = start;
         }

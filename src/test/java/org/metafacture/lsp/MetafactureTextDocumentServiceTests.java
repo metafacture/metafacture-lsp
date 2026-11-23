@@ -18,7 +18,6 @@ import org.eclipse.lsp4j.DidChangeTextDocumentParams;
 import org.eclipse.lsp4j.DidOpenTextDocumentParams;
 import org.eclipse.lsp4j.InitializeParams;
 import org.eclipse.lsp4j.Position;
-import org.eclipse.lsp4j.SemanticTokenTypes;
 import org.eclipse.lsp4j.SemanticTokens;
 import org.eclipse.lsp4j.SemanticTokensParams;
 import org.eclipse.lsp4j.SemanticTokensWithRegistrationOptions;
@@ -28,6 +27,7 @@ import org.eclipse.lsp4j.TextDocumentItem;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.metafacture.lsp.langserver.FluxSemanticTokens;
 import org.metafacture.lsp.langserver.MetafactureLanguageServer;
 import org.metafacture.lsp.langserver.MetafactureTextDocumentService;
 
@@ -187,18 +187,18 @@ class MetafactureTextDocumentServiceTests {
                         0,
                         0,
                         8,
-                        0,
-                        0,
+                        FluxSemanticTokens.INSTANCE.commentType(),
+                        FluxSemanticTokens.INSTANCE.noModifiers(),
                         1,
                         secondComment - secondLineStart,
                         "// second".length(),
-                        0,
-                        0,
+                        FluxSemanticTokens.INSTANCE.commentType(),
+                        FluxSemanticTokens.INSTANCE.noModifiers(),
                         1,
                         0,
                         "// third".length(),
-                        0,
-                        0),
+                        FluxSemanticTokens.INSTANCE.commentType(),
+                        FluxSemanticTokens.INSTANCE.noModifiers()),
                 data);
     }
 
@@ -222,7 +222,12 @@ class MetafactureTextDocumentServiceTests {
         int nextLineStart = text.lastIndexOf('\n', commentStart) + 1;
 
         assertEquals(
-                List.of(1, commentStart - nextLineStart, "// actual comment".length(), 0, 0),
+                List.of(
+                        1,
+                        commentStart - nextLineStart,
+                        "// actual comment".length(),
+                        FluxSemanticTokens.INSTANCE.commentType(),
+                        FluxSemanticTokens.INSTANCE.noModifiers()),
                 textDocumentService.semanticTokensFull(params).get().getData());
     }
 
@@ -241,7 +246,12 @@ class MetafactureTextDocumentServiceTests {
         params.setTextDocument(new TextDocumentIdentifier(uri));
 
         assertEquals(
-                List.of(1, 0, comment.length(), 0, 0),
+                List.of(
+                        1,
+                        0,
+                        comment.length(),
+                        FluxSemanticTokens.INSTANCE.commentType(),
+                        FluxSemanticTokens.INSTANCE.noModifiers()),
                 textDocumentService.semanticTokensFull(params).get().getData());
     }
 
@@ -263,7 +273,14 @@ class MetafactureTextDocumentServiceTests {
         params.setTextDocument(new TextDocumentIdentifier(uri));
         SemanticTokens tokens = textDocumentService.semanticTokensFull(params).get();
 
-        assertEquals(List.of(0, 0, 10, 0, 0), tokens.getData());
+        assertEquals(
+                List.of(
+                        0,
+                        0,
+                        10,
+                        FluxSemanticTokens.INSTANCE.commentType(),
+                        FluxSemanticTokens.INSTANCE.noModifiers()),
+                tokens.getData());
     }
 
     @Test
@@ -273,7 +290,7 @@ class MetafactureTextDocumentServiceTests {
         SemanticTokensWithRegistrationOptions options =
                 result.getCapabilities().getSemanticTokensProvider();
 
-        assertEquals(List.of(SemanticTokenTypes.Comment), options.getLegend().getTokenTypes());
+        assertEquals(FluxSemanticTokens.INSTANCE.types(), options.getLegend().getTokenTypes());
         assertTrue(options.getFull().isLeft());
         assertTrue(options.getFull().getLeft());
     }
