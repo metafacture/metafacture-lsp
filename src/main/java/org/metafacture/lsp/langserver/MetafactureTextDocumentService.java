@@ -65,8 +65,7 @@ public class MetafactureTextDocumentService implements TextDocumentService {
 
             String comment = token.getText();
             int length = comment.length();
-            while (length > 0
-                    && (comment.charAt(length - 1) == '\r' || comment.charAt(length - 1) == '\n')) {
+            while (length > 0 && endsWithLineBreak(comment, length)) {
                 length--;
             }
             if (length == 0) {
@@ -89,6 +88,11 @@ public class MetafactureTextDocumentService implements TextDocumentService {
             previousStart = start;
         }
         return tokens;
+    }
+
+    private boolean endsWithLineBreak(String comment, int length) {
+        char lastCharacter = comment.charAt(length - 1);
+        return lastCharacter == '\r' || lastCharacter == '\n';
     }
 
     private Stream<CompletionItem> getCompletionItems() {
