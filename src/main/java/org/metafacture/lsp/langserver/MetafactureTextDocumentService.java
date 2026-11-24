@@ -86,8 +86,7 @@ public class MetafactureTextDocumentService implements TextDocumentService {
         return tokens;
     }
 
-    
-    private Integer commentLength(Token token){
+    private Integer commentLength(Token token) {
         String comment = token.getText();
         int length = comment.length();
         while (length > 0 && endsWithLineBreak(comment, length)) {
