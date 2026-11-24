@@ -75,7 +75,7 @@ public class MetafactureTextDocumentService implements TextDocumentService {
             tokens.add(line - previousLine);
             // delta/start column
             // on the same line as the previous comment = start difference from that comment
-            // on another line as the previous comment = absolute character position)
+            // on another line than the previous comment = absolute character position
             tokens.add(line == previousLine ? start - previousStart : start);
             tokens.add(commentLength);
             tokens.add(FluxSemanticTokens.INSTANCE.commentType());
