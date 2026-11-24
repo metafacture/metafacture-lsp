@@ -21,6 +21,7 @@ dependencies {
     implementation 'org.eclipse.lsp4j:org.eclipse.lsp4j:0.21.0'
     implementation 'org.springframework.boot:spring-boot-starter-websocket'
     implementation 'org.reflections:reflections:0.10.2'
+    implementation 'org.metafacture:metafacture-flux:9.0.0'
     implementation 'org.metafacture:metafacture-biblio:9.0.0'
     implementation 'org.metafacture:metafacture-commons:9.0.0'
     implementation 'org.metafacture:metafacture-csv:9.0.0'
@@ -39,7 +40,9 @@ dependencies {
     implementation 'org.metafacture:metafacture-mangling:9.0.0'
     implementation 'org.metafacture:metafacture-monitoring:9.0.0'
     implementation 'org.metafacture:metafacture-plumbing:9.0.0'
-    implementation 'org.metafacture:metafacture-runner:9.0.0'
+    implementation('org.metafacture:metafacture-runner:9.0.0') {
+        exclude group: 'org.antlr', module: 'antlr-runtime'
+    }
     implementation 'org.metafacture:metafacture-scripting:9.0.0'
     implementation 'org.metafacture:metafacture-statistics:9.0.0'
     implementation 'org.metafacture:metafacture-strings:9.0.0'
@@ -47,6 +50,7 @@ dependencies {
     implementation 'org.metafacture:metafacture-xml:9.0.0'
     implementation 'org.metafacture:metafacture-yaml:9.0.0'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
     developmentOnly("org.springframework.boot:spring-boot-devtools")
 }
 
