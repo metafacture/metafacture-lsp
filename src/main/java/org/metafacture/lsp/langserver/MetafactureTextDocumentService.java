@@ -63,12 +63,8 @@ public class MetafactureTextDocumentService implements TextDocumentService {
                 continue;
             }
 
-            String comment = token.getText();
-            int length = comment.length();
-            while (length > 0 && endsWithLineBreak(comment, length)) {
-                length--;
-            }
-            if (length == 0) {
+            int commentLength = commentLength(token);
+            if (commentLength == 0) {
                 continue;
             }
 
@@ -81,13 +77,23 @@ public class MetafactureTextDocumentService implements TextDocumentService {
             // on the same line as the previous comment = start difference from that comment
             // on another line as the previous comment = absolute character position)
             tokens.add(line == previousLine ? start - previousStart : start);
-            tokens.add(length);
+            tokens.add(commentLength);
             tokens.add(FluxSemanticTokens.INSTANCE.commentType());
             tokens.add(FluxSemanticTokens.INSTANCE.noModifiers());
             previousLine = line;
             previousStart = start;
         }
         return tokens;
+    }
+
+    
+    private Integer commentLength(Token token){
+        String comment = token.getText();
+        int length = comment.length();
+        while (length > 0 && endsWithLineBreak(comment, length)) {
+            length--;
+        }
+        return length;
     }
 
     private boolean endsWithLineBreak(String comment, int length) {
